@@ -28,23 +28,13 @@ public class PersistentExpenseManager extends ExpenseManager {
     @Override
     public void setup() throws ExpenseManagerException {
         SQLiteDatabase database=context.openOrCreateDatabase("140384P", context.MODE_PRIVATE,  null);
-        database.execSQL("CREATE TABLE IF NOT EXISTS Account(" +
-                "account_no VARCHAR PRIMARY KEY,"+
-                "bank VARCHAR," +
-                "account_holder VARCHAR,"+
-                "initial_balance REAL"+
-        ");");
-        database.execSQL("CREATE TABLE IF NOT EXISTS TransactionLog("+
-                "id INTEGER PRIMARY_KEY,"+
-                "date Date,"+
-                "account_no VARCHAR,"+
-                "type INT,"+
-                "amount REAL,"+
-                "FOREIGN KEY(account_no)References Account(Account_no)"+
-                ");");
+        database.execSQL("CREATE TABLE IF NOT EXISTS Account(" + "account_no VARCHAR PRIMARY KEY,"+ "bank VARCHAR," + "account_holder VARCHAR,"+ "initial_balance REAL"+ ");");
+        database.execSQL("CREATE TABLE IF NOT EXISTS TransactionLog("+ "id INTEGER PRIMARY_KEY,"+ "date Date,"+ "account_no VARCHAR,"+ "type INT,"+ "amount REAL,"+ "FOREIGN KEY(account_no)References Account(Account_no)"+ ");");
         ;
+        //Setup AccountDAO object
         AccountDAO persistentAccountDAO=new PersistentAccountDAO(database);
         setAccountsDAO(persistentAccountDAO);
+        //Setup TransactionDAO object
         TransactionDAO persistentTransactionDAO=new PersistentTransactionDAO(database);
         setTransactionsDAO(persistentTransactionDAO);
 
