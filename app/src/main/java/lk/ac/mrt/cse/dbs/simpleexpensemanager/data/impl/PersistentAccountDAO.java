@@ -26,13 +26,14 @@ public class PersistentAccountDAO implements AccountDAO{
         //Query to select all account numbers from the account table
         Cursor cursor=database.rawQuery("SELECT account_no FROM Account",null);
 
-        cursor.moveToFirst();
+
         ArrayList<String> resultSet = new ArrayList<String>();
-        while (cursor.moveToNext())
-        {
-            //adding each account number
-            resultSet.add(cursor.getString(cursor.getColumnIndex("account_no")));
-        }
+       if(cursor.moveToFirst()) {
+            do{
+               //adding each account number
+               resultSet.add(cursor.getString(cursor.getColumnIndex("account_no")));
+           }while (cursor.moveToNext());
+       }
         cursor.close();
        //returning account number list
         return resultSet;
@@ -43,17 +44,18 @@ public class PersistentAccountDAO implements AccountDAO{
     public List<Account> getAccountsList() {
         //query to get all all accounts
         Cursor cursor=database.rawQuery("SELECT * FROM Account",null);
-        cursor.moveToFirst();
-        ArrayList<Account> resultSet=new ArrayList<Account>();
-        while (cursor.moveToNext())
-        {
-            //create account object for each account with retrived details
-            Account account = new Account(cursor.getString(cursor.getColumnIndex("account_no")),
-                    cursor.getString(cursor.getColumnIndex("bank")),
-                    cursor.getString(cursor.getColumnIndex("account_holder")),
-                    cursor.getDouble(cursor.getColumnIndex("initial_balance")));
 
-            resultSet.add(account);
+        ArrayList<Account> resultSet=new ArrayList<Account>();
+        if(cursor.moveToFirst()) {
+            do {
+                //create account object for each account with retrived details
+                Account account = new Account(cursor.getString(cursor.getColumnIndex("account_no")),
+                        cursor.getString(cursor.getColumnIndex("bank")),
+                        cursor.getString(cursor.getColumnIndex("account_holder")),
+                        cursor.getDouble(cursor.getColumnIndex("initial_balance")));
+
+                resultSet.add(account);
+            } while (cursor.moveToNext());
         }
         cursor.close();
         //return accounts
@@ -110,7 +112,7 @@ public class PersistentAccountDAO implements AccountDAO{
 
     @Override
     public void updateBalance(String accountNo, ExpenseType expenseType, double amount) throws InvalidAccountException {
-        //query toupdate balance for a specfic account number
+        //query to update balance for a specfic account number
         String query="UPDATE Account SET initial_balance=initial_balance +? WHERE account_no=?";
         SQLiteStatement stat=database.compileStatement(query);
         if(expenseType==ExpenseType.EXPENSE){

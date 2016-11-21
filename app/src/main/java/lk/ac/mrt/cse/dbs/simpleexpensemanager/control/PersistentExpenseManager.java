@@ -32,10 +32,10 @@ public class PersistentExpenseManager extends ExpenseManager {
         database.execSQL("CREATE TABLE IF NOT EXISTS TransactionLog("+ "id INTEGER PRIMARY_KEY,"+ "date Date,"+ "account_no VARCHAR,"+ "type INT,"+ "amount REAL,"+ "FOREIGN KEY(account_no)References Account(Account_no)"+ ");");
         ;
         //Setup AccountDAO object
-        AccountDAO persistentAccountDAO=new PersistentAccountDAO(database);
+        PersistentAccountDAO persistentAccountDAO=new PersistentAccountDAO(database);
         setAccountsDAO(persistentAccountDAO);
         //Setup TransactionDAO object
-        TransactionDAO persistentTransactionDAO=new PersistentTransactionDAO(database);
+        PersistentTransactionDAO persistentTransactionDAO=new PersistentTransactionDAO(database);
         setTransactionsDAO(persistentTransactionDAO);
 
 

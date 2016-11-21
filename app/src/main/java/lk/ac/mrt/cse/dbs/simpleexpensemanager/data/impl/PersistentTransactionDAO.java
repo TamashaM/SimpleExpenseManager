@@ -1,5 +1,6 @@
 package lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -24,15 +25,13 @@ public class PersistentTransactionDAO implements TransactionDAO {
 
     @Override
     public void logTransaction(Date date, String accountNo, ExpenseType expenseType, double amount) {
-        String query = "INSERT INTO TransactionLog (account_no,type,amount,date) VALUES (?,?,?,?)";
-        SQLiteStatement stat = database.compileStatement(query);
 
-        stat.bindString(1,accountNo);
-        stat.bindLong(2,(expenseType == ExpenseType.EXPENSE) ? 0 : 1);
-        stat.bindDouble(3,amount);
-        stat.bindLong(4,date.getTime());
-
-        stat.executeInsert();
+        ContentValues values= new ContentValues();
+        values.put("account_no",accountNo);
+        values.put("date",date.getTime());
+        values.put("amount",amount);
+        values.put("type",(expenseType == ExpenseType.EXPENSE) ? 0 : 1);
+        database.insert("TransactionLog",null,values);
     }
 
     @Override
@@ -40,14 +39,15 @@ public class PersistentTransactionDAO implements TransactionDAO {
         Cursor cursor = database.rawQuery("SELECT * FROM TransactionLog",null);
 
         ArrayList<Transaction> resultSet = new ArrayList<Transaction>();
-        cursor.moveToFirst();
-        while(cursor.moveToNext()){
-            Transaction transaction = new Transaction(new Date(cursor.getLong(cursor.getColumnIndex("date"))),
-                    cursor.getString(cursor.getColumnIndex("account_no")),
+        if(cursor.moveToFirst()) {
+            do {
+                Transaction transaction = new Transaction(new Date(cursor.getLong(cursor.getColumnIndex("date"))),
+                        cursor.getString(cursor.getColumnIndex("account_no")),
 
-                    (cursor.getInt(cursor.getColumnIndex("type")) == 0) ? ExpenseType.EXPENSE : ExpenseType.INCOME,
-                    cursor.getDouble(cursor.getColumnIndex("amount")));
-            resultSet.add(transaction);
+                        (cursor.getInt(cursor.getColumnIndex("type")) == 0) ? ExpenseType.EXPENSE : ExpenseType.INCOME,
+                        cursor.getDouble(cursor.getColumnIndex("amount")));
+                resultSet.add(transaction);
+            }while (cursor.moveToNext());
         }
         cursor.close();
         return resultSet;
@@ -56,15 +56,16 @@ public class PersistentTransactionDAO implements TransactionDAO {
     @Override
     public List<Transaction> getPaginatedTransactionLogs(int limit) {
         Cursor cursor = database.rawQuery("SELECT * FROM TransactionLog LIMIT " + limit,null);
-        cursor.moveToFirst();
-        ArrayList<Transaction> resultSet = new ArrayList<Transaction>();
 
-        while(cursor.moveToNext()){
-            Transaction transaction = new Transaction(new Date(cursor.getLong(cursor.getColumnIndex("date"))),
-                    cursor.getString(cursor.getColumnIndex("account_no")),
-                    (cursor.getInt(cursor.getColumnIndex("type")) == 0) ? ExpenseType.EXPENSE : ExpenseType.INCOME,
-                    cursor.getDouble(cursor.getColumnIndex("amount")));
-            resultSet.add(transaction);
+        ArrayList<Transaction> resultSet = new ArrayList<Transaction>();
+        if(cursor.moveToFirst()) {
+            do {
+                Transaction transaction = new Transaction(new Date(cursor.getLong(cursor.getColumnIndex("date"))),
+                        cursor.getString(cursor.getColumnIndex("account_no")),
+                        (cursor.getInt(cursor.getColumnIndex("type")) == 0) ? ExpenseType.EXPENSE : ExpenseType.INCOME,
+                        cursor.getDouble(cursor.getColumnIndex("amount")));
+                resultSet.add(transaction);
+            }while (cursor.moveToNext());
         }
         cursor.close();
         return resultSet;
